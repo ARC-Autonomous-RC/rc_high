@@ -12,4 +12,5 @@ and set the fix frame to ARC_car_base_link to view the car model (robot model)
 ## Generating tf tree 
 
 rosrunn tf view_frames
+
 evince frames.pdf
