@@ -9,6 +9,8 @@ roslaunch rc_high RC_car_display.launch
 
 and set the fix frame to ARC_car_base_link to view the car model (robot model)
 
+NOTE:you migt have t install ROS node joint_state_publisher_gui
+
 ## Generating tf tree 
 
 rosrunn tf view_frames
