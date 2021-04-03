@@ -10,10 +10,10 @@
 
     <xacro:arg name="camera_name"   default="zed" />
     <xacro:arg name="camera_model"  default="zed" />
-    <xacro:arg name="base_frame"    default="zed_base_link" />
-    <xacro:arg name="cam_pos_x"     default="0.0" />
+    <xacro:arg name="base_frame"    default="base_link" />
+    <xacro:arg name="cam_pos_x"     default="0.40" />
     <xacro:arg name="cam_pos_y"     default="0.0" />
-    <xacro:arg name="cam_pos_z"     default="0.0" />
+    <xacro:arg name="cam_pos_z"     default="0.065" />
     <xacro:arg name="cam_roll"      default="0.0" />
     <xacro:arg name="cam_pitch"     default="0.0" />
     <xacro:arg name="cam_yaw"       default="0.0" />
@@ -131,44 +131,43 @@
 
   <xacro:macro name="right_wheels_collision_geometry">
     <origin xyz="0 0 0.0225" rpy="0 0 0" />
-    <geometry>e="robot_description"/>
-
+    <geometry>
       <cylinder length="0.045" radius="0.05" />
     </geometry>
   </xacro:macro>
 
   <!-- ADD chassis and its inertia link -->  
   
-  <link name="$(arg robot_name)_base_link"/>
+  <link name="base_link"/>
 
-  <link name="$(arg robot_name)_chassis">
+  <link name="chassis">
     <visual>
       <xacro:chassis_geometry/>
       <material name="red" />
     </visual>
   </link>
 
-  <joint name="$(arg robot_name)_base_link_joint" type="fixed">
+  <joint name="base_link_joint" type="fixed">
     <origin xyz="0 0 0.05" rpy="0 0 0" />
-    <parent link="$(arg robot_name)_base_link" />
-    <child link="$(arg robot_name)_chassis" />
+    <parent link="base_link" />
+    <child link="chassis" />
   </joint>
 
-  <link name="$(arg robot_name)_chassis_inertia">
+  <link name="chassis_inertia">
     <inertial>
       <xacro:chassis_inertial_params />
     </inertial>
   </link>
 
-  <joint name="$(arg robot_name)_chassis_inertia_joint" type="fixed">
+  <joint name="chassis_inertia_joint" type="fixed">
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <parent link="$(arg robot_name)_chassis" />
-    <child link="$(arg robot_name)_chassis_inertia" />
+    <parent link="chassis" />
+    <child link="chassis_inertia" />
   </joint>
 
   <!-- Add the left rear wheel with its joints -->
 
-  <link name="$(arg robot_name)_left_rear_wheel">
+  <link name="left_rear_wheel">
     <inertial>
       <xacro:left_wheels_inertial_params />
     </inertial>
@@ -181,17 +180,17 @@
     </collision>
   </link>
 
-  <joint name="$(arg robot_name)_left_rear_wheel_joint" type="continuous">
+  <joint name="left_rear_wheel_joint" type="continuous">
     <origin xyz="0 0.1 0" rpy="1.5708 0 0" />
-    <parent link="$(arg robot_name)_chassis" />
-    <child link="$(arg robot_name)_left_rear_wheel" />
+    <parent link="chassis" />
+    <child link="left_rear_wheel" />
     <axis xyz="0 0 -1" />
     <limit effort="10" velocity="100" />
   </joint>
 
     <!-- Add the right rear wheel with its joints -->
 
-  <link name="$(arg robot_name)_right_rear_wheel">
+  <link name="right_rear_wheel">
     <inertial>
       <xacro:right_wheels_inertial_params />
     </inertial>
@@ -204,17 +203,17 @@
     </collision>
   </link>
 
-  <joint name="$(arg robot_name)_right_rear_wheel_joint" type="continuous">
+  <joint name="right_rear_wheel_joint" type="continuous">
     <origin xyz="0 -0.1 0" rpy="1.5708 0 0" />
-    <parent link="$(arg robot_name)_chassis" />
-    <child link="$(arg robot_name)_right_rear_wheel" />
+    <parent link="chassis" />
+    <child link="right_rear_wheel" />
     <axis xyz="0 0 -1" />
     <limit effort="10" velocity="100" />
   </joint>
 
  <!-- Add the steering hinge and its joints -->
 
- <link name="$(arg robot_name)_left_steering_hinge">
+ <link name="left_steering_hinge">
     <inertial>
       <xacro:steering_hinge_inertial_params />
     </inertial>
@@ -224,15 +223,15 @@
     </visual>
   </link>
 
-  <joint name="$(arg robot_name)_left_steering_hinge_joint" type="revolute">
+  <joint name="left_steering_hinge_joint" type="revolute">
     <origin xyz="0.325 0.1 0" rpy="0 1.5708 0" />
-    <parent link="$(arg robot_name)_chassis" />
-    <child link="$(arg robot_name)_left_steering_hinge" />
+    <parent link="chassis" />
+    <child link="left_steering_hinge" />
     <axis xyz="-1 0 0" />
     <limit lower="-1.0" upper="1.0" effort="10" velocity="100" />
   </joint>
 
-  <link name="$(arg robot_name)_right_steering_hinge">
+  <link name="right_steering_hinge">
     <inertial>
       <xacro:steering_hinge_inertial_params />
     </inertial>
@@ -242,17 +241,17 @@
     </visual>
   </link>
 
-  <joint name="$(arg robot_name)_right_steering_hinge_joint" type="continuous">
+  <joint name="right_steering_hinge_joint" type="continuous">
     <origin xyz="0.325 -0.1 0" rpy="0 1.5708 0" />
-    <parent link="$(arg robot_name)_chassis" />
-    <child link="$(arg robot_name)_right_steering_hinge" />
+    <parent link="chassis" />
+    <child link="right_steering_hinge" />
     <axis xyz="-1 0 0" />
     <limit lower="-1.0" upper="1.0" effort="10" velocity="100" />
   </joint>
 
 <!-- Add the left front wheel with its joints and tranmissions -->
 
-  <link name="$(arg robot_name)_left_front_wheel">
+  <link name="left_front_wheel">
     <inertial>
       <xacro:left_wheels_inertial_params />
     </inertial>
@@ -265,10 +264,10 @@
     </collision>
   </link>
 
-  <joint name="$(arg robot_name)_left_front_wheel_joint" type="continuous">
+  <joint name="left_front_wheel_joint" type="continuous">
     <origin xyz="0 0 0" rpy="1.5708 0 0" />
-    <parent link="$(arg robot_name)_left_steering_hinge" />
-    <child link="$(arg robot_name)_left_front_wheel" />
+    <parent link="left_steering_hinge" />
+    <child link="left_front_wheel" />
     <axis xyz="0 0 -1" />
     <limit effort="10" velocity="100" />
   </joint>
@@ -276,7 +275,7 @@
 
     <!-- Add the right front wheel with its joints and tranmissions -->
 
-  <link name="$(arg robot_name)_right_front_wheel">
+  <link name="right_front_wheel">
     <inertial>
       <xacro:right_wheels_inertial_params />
     </inertial>
@@ -289,17 +288,17 @@
     </collision>
   </link>
 
-  <joint name="$(arg robot_name)_right_front_wheel_joint" type="continuous">
+  <joint name="right_front_wheel_joint" type="continuous">
     <origin xyz="0 0 0" rpy="1.5708 0 0" />
-    <parent link="$(arg robot_name)_right_steering_hinge" />
-    <child link="$(arg robot_name)_right_front_wheel" />
+    <parent link="right_steering_hinge" />
+    <child link="right_front_wheel" />
     <axis xyz="0 0 -1" />
     <limit effort="10" velocity="100"/>
   </joint>
 
   <!-- Add Hokuyo laser scanner -->
 
-  <link name="$(arg robot_name)_laser">
+  <link name="laser">
     <inertial>
       <xacro:hokuyo_inertial_params />
     </inertial>
@@ -318,25 +317,18 @@
     </visual>
   </link>
 
-  <joint name="$(arg robot_name)_hokuyo_joint" type="fixed">
+  <joint name="hokuyo_joint" type="fixed">
 	  <origin xyz="0.355 0.0 0.08" rpy="0 0 0"/>
-          <parent link="$(arg robot_name)_chassis" />
-          <child link="$(arg robot_name)_laser" />
+          <parent link="chassis" />
+          <child link="laser" />
           <axis xyz="0 0 1" />
   </joint>
 
   <!-- ADD ZED camera and its components -->
   
 <!-- base_link -->
-  <joint name="$(arg robot_name)_chassis_to_zed" type="fixed">
-	  <origin xyz="0.400 0.0 0.065" rpy="0 0 0" />
-	  <parent link="$(arg robot_name)_chassis" />
-          <child link="$(arg base_frame)" />
-	  <axis xyz="0 0 1" />
-  </joint>
-
-  
-  <link name="$(arg base_frame)" />
+   
+  <!-- <link name="$(arg base_frame)" />  -->
 
   <!-- Camera Center -->
     <joint name="$(arg camera_name)_camera_center_joint" type="fixed">

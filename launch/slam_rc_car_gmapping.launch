@@ -1,0 +1,139 @@
+<launch>
+
+    <!-- controller -->
+
+    <node pkg = "controller" name = "controller_node" type = "controller_node" output="screen">
+	<param name="~port" value="/dev/ttyACM1"/>
+	<param name="~baudrate" value="115200"/>
+	<param name="~timeout" value="5000"/>
+    </node>
+
+
+
+    <!-- joy stick -->
+
+    <node pkg = "joy" name = "Joystick_listener" type="joy_node">
+	<param name="~dev" value="/dev/input/js0"/>
+    </node>
+
+
+    <!-- Hokuyo lidar -->
+
+    <node name="urg_node" pkg="urg_node" type="urg_node" output="screen">
+	<param name="ip_address" value=""/>
+	<param name="serial_port" value="/dev/ttyACM0"/>
+	<param name="serial_baud" value="115200"/>
+	<param name="frame_id" value="laser"/>
+	<param name="calibrate_time" value="true"/>
+	<param name="publish_intensity" value="false"/>
+	<param name="publish_multiecho" value="false"/>
+	<param name="angle_min" value="-1.5707963"/>
+	<param name="angle_max" value="1.5707963"/>
+    </node>
+ 
+  
+<!-- Camera Model and Name -->
+    <arg name="camera_name"           default="zed" /> <!-- The name you want -->
+    <arg name="camera_model"          default="zed" /> <!-- 'zed' or 'zedm' or 'zed2' -->
+    <arg name="node_name"             default="zed_node" />
+
+    <!-- Load SVO file -->
+    <arg name="svo_file"              default="" /><!-- <arg name="svo_file" default="path/to/svo/file.svo"> -->
+    <!-- Remote stream -->
+    <arg name="stream"                default="" /> <!-- <arg name="stream" default="<ip_address>:<port>"> -->
+
+    <!-- Base frame -->
+    <arg name="base_frame"            default="base_link" />
+
+    <!-- Publish ZED urdf -->
+    <arg name="publish_urdf"          default="false" />
+
+    <arg name="camera_id"             default="0" />
+    <arg name="gpu_id"                default="-1" />
+
+    <!-- Position respect to base frame (i.e. "base_link) -->
+    <arg name="cam_pos_x"             default="0.4" />
+    <arg name="cam_pos_y"             default="0.0" />
+    <arg name="cam_pos_z"             default="0.065" />
+
+    <!-- Orientation respect to base frame (i.e. "base_link) -->
+    <arg name="cam_roll"              default="0.0" />
+    <arg name="cam_pitch"             default="0.0" />
+    <arg name="cam_yaw"               default="0.0" />
+
+    <!-- ROS URDF description of the ZED -->
+    <group if="$(arg publish_urdf)">
+        <param name="$(arg camera_name)_description"
+               command="$(find xacro)/xacro '$(find zed_wrapper)/urdf/zed_descr.urdf.xacro'
+                        camera_name:=$(arg camera_name)
+                        camera_model:=$(arg camera_model)
+                        base_frame:=$(arg base_frame)
+                        cam_pos_x:=$(arg cam_pos_x)
+                        cam_pos_y:=$(arg cam_pos_y)
+                        cam_pos_z:=$(arg cam_pos_z)
+                        cam_roll:=$(arg cam_roll)
+                        cam_pitch:=$(arg cam_pitch)
+                        cam_yaw:=$(arg cam_yaw)"
+        />
+
+        <node name="$(arg camera_name)_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen" required="true">
+            <remap from="robot_description" to="$(arg camera_name)_description" />
+        </node>
+    </group>
+
+    <node name="$(arg node_name)" pkg="zed_wrapper" type="zed_wrapper_node" output="screen" required="true"><!-- launch-prefix="valgrind" -->
+        <rosparam file="$(find zed_wrapper)/params/common.yaml" command="load" />
+        <rosparam file="$(find zed_wrapper)/params/$(arg camera_model).yaml" command="load" />
+
+        <!-- Camera name -->
+        <param name="general/camera_name"               value="$(arg camera_name)" />
+
+        <!-- Base frame -->
+        <param name="general/base_frame"                value="$(arg base_frame)" />
+
+        <!-- SVO file path -->
+        <param name="svo_file"                          value="$(arg svo_file)" />
+
+        <!-- Remote stream -->
+        <param name="stream"                            value="$(arg stream)" />
+
+        <!-- Camera ID -->
+        <param name="general/zed_id"                    value="$(arg camera_id)" />
+
+        <!-- GPU ID -->
+        <param name="general/gpu_id"                    value="$(arg gpu_id)" />
+    </node>
+
+
+<!-- Gmapping node --> 
+
+  <arg name="set_base_frame" default="base_link"/>
+  <arg name="set_odom_frame" default="odom"/>
+  <arg name="set_map_frame"  default="map"/>
+  
+  <node pkg="gmapping" type="slam_gmapping" name="slam_rc_car_gmapping" output="screen">
+    <param name="base_frame" value="$(arg set_base_frame)"/>
+    <param name="odom_frame" value="$(arg set_odom_frame)"/>
+    <param name="map_frame"  value="$(arg set_map_frame)"/>
+    <rosparam command="load" file="$(find gmapping)/config/rc_gmapping.yaml" />
+  </node>
+
+
+<!-- Rviz, robot_state_publisher bringup -->
+
+  <arg name="model" default="$(find rc_high)/urdf/ARC_RCcar.urdf.xacro"/>
+  <arg name="gui" default="true" />
+  <arg name="rvizconfig" default="$(find rc_high)/rviz/slam_rc_car_gmapping.rviz" />
+
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
+
+  <node if="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" />
+
+  <node unless="$(arg gui)" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" />
+
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+</launch>
+
